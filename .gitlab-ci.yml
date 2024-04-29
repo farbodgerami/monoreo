@@ -68,24 +68,106 @@ vote-test-image:
     - docker push ${IMAGE_PATH}/vote:${VERSION}
 
 
-voting-app-scan-image:
-  stage: test
-  image: aquasec/trivy
-  needs: ["vote-test-image","result-test-image","worker-test-image"]
+# voting-app-scan-image:
+#   stage: test
+#   image: aquasec/trivy
+#   needs: ["vote-test-image","result-test-image","worker-test-image"]
+#   variables:
+#     VOTE_IMAGE: ${IMAGE_PATH}/vote:${VERSION}
+#     RESULT_IMAGE: ${IMAGE_PATH}/result:${VERSION}
+#     WORKER_IMAGE: ${IMAGE_PATH}/worker:${VERSION}
+#   script:
+#     - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $VOTE_IMAGE
+#     - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $VOTE_IMAGE
+#     - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $RESULT_IMAGE
+#     - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $RESULT_IMAGE
+#     - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $WORKER_IMAGE
+#     - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $WORKER_IMAGE
+#   cache:
+#     paths:
+#       - /cache/.trivycache/
+#   artifacts:
+#     reports:
+#       container_scanning: gl-container-scanning-report.json
+
+
+
+deploy-to-pre-product:
+  stage: deploy
+  image: alpine
   variables:
-    VOTE_IMAGE: ${IMAGE_PATH}/vote:${VERSION}
-    RESULT_IMAGE: ${IMAGE_PATH}/result:${VERSION}
-    WORKER_IMAGE: ${IMAGE_PATH}/worker:${VERSION}
+    DOMAIN: pre-product.tlow.ir
+    SERVER_NAME: pre-product.tlow.ir
+    HOSTNAME: pre-product
+    SSH_PORT: 8431
+    SSH_USER: root
+    SERVICE_PATH: /opt/services/vote-services
+  before_script:
+    - 'command -v ssh-agent >/dev/null || ( apk add --update openssh )'
+    - eval $(ssh-agent -s)
+    - chmod 400 ${SSH_PRIVATE_KEY}
+    - ssh-add ${SSH_PRIVATE_KEY}
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
   script:
-    - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $VOTE_IMAGE
-    - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $VOTE_IMAGE
-    - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $RESULT_IMAGE
-    - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $RESULT_IMAGE
-    - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $WORKER_IMAGE
-    - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $WORKER_IMAGE
-  cache:
-    paths:
-      - /cache/.trivycache/
-  artifacts:
-    reports:
-      container_scanning: gl-container-scanning-report.json
+    - |
+      # Create directory if not exist
+      ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
+      [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
+      "
+      # change env file
+      sed -i "s/FQDN/${DOMAIN}/g" .env
+      sed -i "s/SERVER_NAME/${HOSTNAME}/g" .env
+      sed -i "s/PIPELINE_ID/${VERSION}/g" .env
+      # move compose and env file to server
+      scp -o StrictHostKeyChecking=no -P${SSH_PORT} .env ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
+      scp -o StrictHostKeyChecking=no -P${SSH_PORT} compose.yml ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
+      # deploy service on server
+      ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
+      docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+      cd ${SERVICE_PATH}
+      docker compose pull
+      docker compose up -d
+      "
+  environment:
+    name: pre-product
+    url: https://vote.$DOMAIN
+
+deploy-to-production:
+  stage: deploy
+  image: alpine
+  variables:
+    DOMAIN: production.tlow.ir
+    SERVER_NAME: production.tlow.ir
+    HOSTNAME: production
+  before_script:
+    - 'command -v ssh-agent >/dev/null || ( apk add --update openssh )'
+    - eval $(ssh-agent -s)
+    - chmod 400 "$SSH_PRIVATE_KEY"
+    - ssh-add "$SSH_PRIVATE_KEY"
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - |
+      # Create directory if not exist
+      ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
+      [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
+      "
+      # change env file
+      sed -i "s/FQDN/${DOMAIN}/g" .env
+      sed -i "s/SERVER_NAME/${HOSTNAME}/g" .env
+      sed -i "s/PIPELINE_ID/${VERSION}/g" .env
+      # move compose and env file to server
+      scp -o StrictHostKeyChecking=no -P${SSH_PORT} .env ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
+      scp -o StrictHostKeyChecking=no -P${SSH_PORT} compose.yml ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
+      # deploy service on server
+      ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
+      docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+      cd ${SERVICE_PATH}
+      docker compose pull
+      docker compose up -d
+      "
+  environment:
+    name: production
+    url: https://vote.$DOMAIN
+  when: manual
