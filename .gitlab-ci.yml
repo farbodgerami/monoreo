@@ -113,8 +113,10 @@ deploy-to-pre-product:
     - |
       # Create directory if not exist
       ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
+      echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
       cat $MY_PUBLIC_KEY >> ~/.ssh/authorized_keys
+
       "
       # change env file
       sed -i "s/FQDN/${DOMAIN}/g" .env
