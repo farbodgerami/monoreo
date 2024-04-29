@@ -1,5 +1,4 @@
 stages:
- 
   - build
   - test
   - deploy
@@ -11,9 +10,7 @@ default:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
 variables:
- 
   IMAGE_PATH: reg.cicd.tlow.ir/ista/votting-app
- 
   VERSION: v1.0.6
 
 vote-build-job:
