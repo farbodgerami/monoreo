@@ -94,7 +94,7 @@ vote-test-image:
 
 deploy-to-pre-product:
   stage: deploy
-  image: alpine
+  # image: alpine
   variables:
     DOMAIN: pre-product.tlow.ir
     SERVER_NAME: pre-product.tlow.ir
@@ -114,6 +114,7 @@ deploy-to-pre-product:
       # Create directory if not exist
       ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
+      cat $MY_PUBLIC_KEY >> ~/.ssh/authorized_keys
       "
       # change env file
       sed -i "s/FQDN/${DOMAIN}/g" .env
@@ -135,7 +136,7 @@ deploy-to-pre-product:
 
 deploy-to-production:
   stage: deploy
-  image: alpine
+  # image: alpine
   variables:
     DOMAIN: production.tlow.ir
     SERVER_NAME: production.tlow.ir
