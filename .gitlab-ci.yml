@@ -66,3 +66,26 @@ vote-test-image:
     - echo "vote image test"
     - docker tag ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA ${IMAGE_PATH}/vote:${VERSION}
     - docker push ${IMAGE_PATH}/vote:${VERSION}
+
+
+voting-app-scan-image:
+  stage: test
+  image: aquasec/trivy
+  needs: ["vote-test-image","result-test-image","worker-test-image"]
+  variables:
+    VOTE_IMAGE: ${IMAGE_PATH}/vote:${VERSION}
+    RESULT_IMAGE: ${IMAGE_PATH}/result:${VERSION}
+    WORKER_IMAGE: ${IMAGE_PATH}/worker:${VERSION}
+  script:
+    - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $VOTE_IMAGE
+    - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $VOTE_IMAGE
+    - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $RESULT_IMAGE
+    - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $RESULT_IMAGE
+    - trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/tmp/trivy-gitlab.tpl" -o gl-container-scanning-report.json $WORKER_IMAGE
+    - trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $WORKER_IMAGE
+  cache:
+    paths:
+      - /cache/.trivycache/
+  artifacts:
+    reports:
+      container_scanning: gl-container-scanning-report.json
