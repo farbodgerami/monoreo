@@ -7,14 +7,14 @@ stages:
   - schedules
 
 default:
-  image: reg.mecan.ir/vote/runner-image:main
+  image: reg.cicd.tlow.ir/vote/runner-image:main
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
 variables:
-  SSH_PORT: 8090
-  SSH_USER: root
-  IMAGE_PATH: reg.mecan.ir/vote/monorepo-vote-app
+  SSH_PORT: 8431
+  SSH_USER: ubuntu
+  IMAGE_PATH: reg.cicd.tlow.ir/ista/votting-app
   SERVICE_PATH: /opt/services/vote-services
   BACKUP_PATH: /opt/services/BACKUP
   VERSION: v1.0.6
@@ -84,7 +84,7 @@ worker-test-image:
 
 voting-app-scan-image:
   stage: test
-  image: reg.mecan.ir/vote/runner-image:trivy
+  image: aquasec/trivy
   needs: ["vote-test-image","result-test-image","worker-test-image"]
   variables:
     VOTE_IMAGE: ${IMAGE_PATH}/vote:${VERSION}
@@ -109,10 +109,10 @@ voting-app-scan-image:
 
 deploy-to-pre-product:
   stage: deploy
-  image: reg.mecan.ir/vote/runner-image:ssh
+  image: reg.cicd.tlow.ir/vote/runner-image:ssh
   variables:
-    DOMAIN: pre-product.mecan.ir
-    SERVER_NAME: pre-product.mecan.ir
+    DOMAIN: pre-product.tlow.ir
+    SERVER_NAME: pre-product.tlow.ir
     HOSTNAME: pre-product
   before_script:
     - 'command -v ssh-agent >/dev/null || ( apk add --update openssh )'
@@ -149,7 +149,7 @@ deploy-to-pre-product:
 
 deploy-to-production:
   stage: deploy
-  image: reg.mecan.ir/vote/runner-image:ssh
+  image: reg.cicd.tlow.ir/vote/runner-image:ssh
   variables:
     DOMAIN: production.mecan.ir
     SERVER_NAME: production.mecan.ir

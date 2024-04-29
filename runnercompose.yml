@@ -1,0 +1,22 @@
+version: '3.8'
+
+networks:
+  app_net:
+    name: app_net
+    external: true
+
+volumes:
+  gitlab-runner-config:
+    name: gitlab-runner-config
+
+services:
+  gitlab-runner:
+    image:
+     gitlab/gitlab-runner:v16.11.0
+    container_name:
+      runner
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - gitlab-runner-config:/etc/gitlab-runner
+    networks:
+      - app_net
