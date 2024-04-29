@@ -13,59 +13,59 @@ variables:
   IMAGE_PATH: reg.cicd.tlow.ir/ista/votting-app
   VERSION: v1.0.6
 
-vote-build-job:
-  stage: build
-  image: docker:dind
-  script:
-    - cd vote
-    - docker build -t ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA .
-    - docker push ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA
+# vote-build-job:
+#   stage: build
+#   image: docker:dind
+#   script:
+#     - cd vote
+#     - docker build -t ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA .
+#     - docker push ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA
 
 
-result-build-job:
-  stage: build
-  image: docker:dind
-  script:
-    - cd result
-    - docker build -t ${IMAGE_PATH}/result:$CI_COMMIT_SHORT_SHA .
-    - docker push ${IMAGE_PATH}/result:$CI_COMMIT_SHORT_SHA
+# result-build-job:
+#   stage: build
+#   image: docker:dind
+#   script:
+#     - cd result
+#     - docker build -t ${IMAGE_PATH}/result:$CI_COMMIT_SHORT_SHA .
+#     - docker push ${IMAGE_PATH}/result:$CI_COMMIT_SHORT_SHA
 
-worker-build-job:
-  stage: build
-  image: docker:dind
-  script:
-    - cd worker
-    - docker build -t ${IMAGE_PATH}/worker:$CI_COMMIT_SHORT_SHA .
-    - docker push ${IMAGE_PATH}/worker:$CI_COMMIT_SHORT_SHA
-
-
-worker-test-image:
-  stage: test
-  needs: ["worker-build-job"]
-  script:
-    - docker pull ${IMAGE_PATH}/worker:$CI_COMMIT_SHORT_SHA
-    - echo "worker image test"
-    - docker tag ${IMAGE_PATH}/worker:$CI_COMMIT_SHORT_SHA ${IMAGE_PATH}/worker:${VERSION}
-    - docker push ${IMAGE_PATH}/worker:${VERSION}
+# worker-build-job:
+#   stage: build
+#   image: docker:dind
+#   script:
+#     - cd worker
+#     - docker build -t ${IMAGE_PATH}/worker:$CI_COMMIT_SHORT_SHA .
+#     - docker push ${IMAGE_PATH}/worker:$CI_COMMIT_SHORT_SHA
 
 
-result-test-image:
-  stage: test
-  needs: ["result-build-job"]
-  script:
-    - docker pull ${IMAGE_PATH}/result:$CI_COMMIT_SHORT_SHA
-    - echo "result image test"
-    - docker tag ${IMAGE_PATH}/result:$CI_COMMIT_SHORT_SHA ${IMAGE_PATH}/result:${VERSION}
-    - docker push ${IMAGE_PATH}/result:${VERSION}
+# worker-test-image:
+#   stage: test
+#   needs: ["worker-build-job"]
+#   script:
+#     - docker pull ${IMAGE_PATH}/worker:$CI_COMMIT_SHORT_SHA
+#     - echo "worker image test"
+#     - docker tag ${IMAGE_PATH}/worker:$CI_COMMIT_SHORT_SHA ${IMAGE_PATH}/worker:${VERSION}
+#     - docker push ${IMAGE_PATH}/worker:${VERSION}
 
-vote-test-image:
-  stage: test
-  needs: ["vote-build-job"]
-  script:
-    - docker pull ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA
-    - echo "vote image test"
-    - docker tag ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA ${IMAGE_PATH}/vote:${VERSION}
-    - docker push ${IMAGE_PATH}/vote:${VERSION}
+
+# result-test-image:
+#   stage: test
+#   needs: ["result-build-job"]
+#   script:
+#     - docker pull ${IMAGE_PATH}/result:$CI_COMMIT_SHORT_SHA
+#     - echo "result image test"
+#     - docker tag ${IMAGE_PATH}/result:$CI_COMMIT_SHORT_SHA ${IMAGE_PATH}/result:${VERSION}
+#     - docker push ${IMAGE_PATH}/result:${VERSION}
+
+# vote-test-image:
+#   stage: test
+#   needs: ["vote-build-job"]
+#   script:
+#     - docker pull ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA
+#     - echo "vote image test"
+#     - docker tag ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA ${IMAGE_PATH}/vote:${VERSION}
+#     - docker push ${IMAGE_PATH}/vote:${VERSION}
 
 
 # voting-app-scan-image:
