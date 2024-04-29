@@ -20,3 +20,6 @@ services:
       - gitlab-runner-config:/etc/gitlab-runner
     networks:
       - app_net
+# add volumes=[...,/var/run/docker.sock:/var/run/docker.sock] to /var/lib/docker/volumes/gitlab-runner-cofig/data/config.toml
+# add:
+# pull_policy=["if-not_present"]
