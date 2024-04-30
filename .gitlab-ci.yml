@@ -144,6 +144,9 @@ deploy-to-production:
     DOMAIN: production.tlow.ir
     SERVER_NAME: production.tlow.ir
     HOSTNAME: production
+    SSH_PORT: 8431
+    SSH_USER: root
+    SERVICE_PATH: /opt/services/vote-services
   before_script:
     # - 'command -v ssh-agent >/dev/null || ( apk add --update openssh )'
     - eval $(ssh-agent -s)
