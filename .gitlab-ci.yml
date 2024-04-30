@@ -90,7 +90,7 @@ variables:
 #   artifacts:
 #     reports:
 #       container_scanning: gl-container-scanning-report.json
-
+#
 
 
 deploy-to-pre-product:
