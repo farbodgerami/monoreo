@@ -9,6 +9,7 @@ default:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
+
 variables:
   IMAGE_PATH: reg.cicd.tlow.ir/ista/votting-app
   VERSION: v1.0.6
@@ -94,7 +95,6 @@ variables:
 
 deploy-to-pre-product:
   stage: deploy
-  # image: alpine
   variables:
     DOMAIN: pre-product.tlow.ir
     SERVER_NAME: pre-product.tlow.ir
@@ -103,7 +103,6 @@ deploy-to-pre-product:
     SSH_USER: root
     SERVICE_PATH: /opt/services/vote-services
   before_script:
-    # - 'command -v ssh-agent >/dev/null || ( apk add --update openssh )'
     - eval $(ssh-agent -s)
     - chmod 400 ${SSH_PRIVATE_KEY}
     - ssh-add ${SSH_PRIVATE_KEY}
@@ -113,69 +112,67 @@ deploy-to-pre-product:
     - |
       # Create directory if not exist
       ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
-      echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      echo "$CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY"
       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
       # zaheran MY_PUBLIC_KEY inja kar nemikone
       # cat $MY_PUBLIC_KEY >> ~/.ssh/authorized_keys
 
       "
-      # change env file
-      sed -i "s/FQDN/${DOMAIN}/g" .env
-      sed -i "s/SERVER_NAME/${HOSTNAME}/g" .env
-      sed -i "s/PIPELINE_ID/${VERSION}/g" .env
-      # move compose and env file to server
-      scp -o StrictHostKeyChecking=no -P${SSH_PORT} .env ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
-      scp -o StrictHostKeyChecking=no -P${SSH_PORT} compose.yml ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
-      # deploy service on server
-      ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
-      docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
-      cd ${SERVICE_PATH}
-      docker compose pull
-      docker compose up -d
-      "
-  environment:
-    name: pre-product
-    url: https://vote.$DOMAIN
+  #     # change env file
+  #     sed -i "s/FQDN/${DOMAIN}/g" .env
+  #     sed -i "s/SERVER_NAME/${HOSTNAME}/g" .env
+  #     sed -i "s/PIPELINE_ID/${VERSION}/g" .env
+  #     # move compose and env file to server
+  #     scp -o StrictHostKeyChecking=no -P${SSH_PORT} .env ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
+  #     scp -o StrictHostKeyChecking=no -P${SSH_PORT} compose.yml ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
+  #     # deploy service on server
+  #     ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
+  #     docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  #     cd ${SERVICE_PATH}
+  #     docker compose pull
+  #     docker compose up -d
+  #     "
+  # environment:
+  #   name: pre-product
+  #   url: https://vote.$DOMAIN
 
-deploy-to-production:
-  stage: deploy
-  # image: alpine
-  variables:
-    DOMAIN: production.tlow.ir
-    SERVER_NAME: production.tlow.ir
-    HOSTNAME: production
-    SSH_PORT: 8431
-    SSH_USER: root
-    SERVICE_PATH: /opt/services/vote-services
-  before_script:
-    # - 'command -v ssh-agent >/dev/null || ( apk add --update openssh )'
-    - eval $(ssh-agent -s)
-    - chmod 400 "$SSH_PRIVATE_KEY"
-    - ssh-add "$SSH_PRIVATE_KEY"
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-  script:
-    - |
-      # Create directory if not exist
-      ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
-      echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
-      "
-      # change env file
-      sed -i "s/FQDN/${DOMAIN}/g" .env
-      sed -i "s/SERVER_NAME/${HOSTNAME}/g" .env
-      sed -i "s/PIPELINE_ID/${VERSION}/g" .env
-      # move compose and env file to server
-      scp -o StrictHostKeyChecking=no -P${SSH_PORT} .env ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
-      scp -o StrictHostKeyChecking=no -P${SSH_PORT} compose.yml ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
-      # deploy service on server
-      ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
-      docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
-      cd ${SERVICE_PATH}
-      docker compose pull
-      docker compose up -d
-      "
-  environment:
-    name: production
-    url: https://vote.$DOMAIN
-  when: manual
+# deploy-to-production:
+#   stage: deploy
+#   variables:
+#     DOMAIN: production.tlow.ir
+#     SERVER_NAME: production.tlow.ir
+#     HOSTNAME: production
+#     SSH_PORT: 8431
+#     SSH_USER: root
+#     SERVICE_PATH: /opt/services/vote-services
+#   before_script:
+#     - eval $(ssh-agent -s)
+#     - chmod 400 "$SSH_PRIVATE_KEY"
+#     - ssh-add "$SSH_PRIVATE_KEY"
+#     - mkdir -p ~/.ssh
+#     - chmod 700 ~/.ssh
+#   script:
+#     - |
+#       # Create directory if not exist
+#       ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
+#       echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+#       [ -d ${SERVICE_PATH} ] || mkdir -p ${SERVICE_PATH}
+#       "
+#       # change env file
+#       sed -i "s/FQDN/${DOMAIN}/g" .env
+#       sed -i "s/SERVER_NAME/${HOSTNAME}/g" .env
+#       sed -i "s/PIPELINE_ID/${VERSION}/g" .env
+#       # move compose and env file to server
+#       scp -o StrictHostKeyChecking=no -P${SSH_PORT} .env ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
+#       scp -o StrictHostKeyChecking=no -P${SSH_PORT} compose.yml ${SSH_USER}@${SERVER_NAME}:${SERVICE_PATH}/
+#       # deploy service on server
+#       ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_NAME} "
+#       docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+#       cd ${SERVICE_PATH}
+#       docker compose pull
+#       docker compose up -d
+#       "
+#   environment:
+#     name: production
+#     url: https://vote.$DOMAIN
+#   when: manual
