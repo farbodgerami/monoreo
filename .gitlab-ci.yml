@@ -18,7 +18,8 @@ vote-build-job:
   stage: build
   image: docker:dind
   script:
-    - cat /root/.docker/config.json  
+    - cat /root/.docker/config.json 
+    - cat $CI_JOB_TOKEN 
     - cd vote
     - docker build -t ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA .
     - docker push ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA
