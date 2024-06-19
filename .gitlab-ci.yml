@@ -16,7 +16,7 @@ variables:
 
 vote-build-job:
   stage: build
-  # image: docker:dind
+  image: docker:dind
   script:
     - cat /root/.docker/config.json 
     - cd vote
