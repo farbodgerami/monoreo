@@ -87,7 +87,7 @@ RESULT_SUB=result
 VOTE_SUB=vote
 
 # ACME variables
-ACME_EMAIL=cert@mecan.ir
+ACME_EMAIL=fb.gerami@gmail.com
 
 # set restart policy
 RESTART_POLICY=on-failure
