@@ -5,7 +5,7 @@ stages:
  
 
 default:
-  image: docker:dind
+  image: alpine
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
@@ -16,7 +16,7 @@ variables:
 
 vote-build-job:
   stage: build
-  image: docker:dind
+  # image: docker:dind
   script:
     - cat /root/.docker/config.json 
     - cd vote
