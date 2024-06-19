@@ -11,7 +11,7 @@ default:
 
 
 variables:
-  IMAGE_PATH: reg.cicd.tlow.ir/ista/votting-app
+  IMAGE_PATH: reg.cicd.tlow.ir/fbgerami
   VERSION: v1.0.6
 
 vote-build-job:
@@ -20,8 +20,8 @@ vote-build-job:
   script:
     - cat /root/.docker/config.json 
     - cd vote
-    - docker build -t ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA .
-    - docker push ${IMAGE_PATH}/vote:$CI_COMMIT_SHORT_SHA
+    - docker build -t ${IMAGE_PATH}/monorepo:$CI_COMMIT_SHORT_SHA .
+    - docker push ${IMAGE_PATH}/monorepo:$CI_COMMIT_SHORT_SHA
  
 
 
