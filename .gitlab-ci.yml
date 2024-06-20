@@ -139,9 +139,9 @@ deploy-to-pre-product:
 deploy-to-production:
   stage: deploy
   variables:
-    DOMAIN: production.tlow.ir
-    SERVER_NAME: production.tlow.ir
-    HOSTNAME: production
+    DOMAIN: product.tlow.ir
+    SERVER_NAME: product.tlow.ir
+    HOSTNAME: product
     SSH_PORT: 8431
     SSH_USER: root
     SERVICE_PATH: /opt/services/vote-services
